@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RPA Use Case: Employee Onboarding Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a3a5c;
+      --accent:    #0d7ecf;
+      --accent2:   #00b4d8;
+      --light-bg:  #f4f7fb;
+      --card-bg:   #ffffff;
+      --text:      #1e2a38;
+      --muted:     #5a6a7e;
+      --border:    #dde4ed;
+      --green:     #16a34a;
+      --red:       #dc2626;
+      --tag-bg:    #e0f0ff;
+      --tag-text:  #0d5e9e;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--light-bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #0d5e9e 60%, var(--accent2) 100%);
+      color: #fff;
+      padding: 56px 32px 48px;
+      text-align: center;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 12px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    header p.subtitle {
+      font-size: 1rem;
+      opacity: 0.82;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    /* ── Section cards ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 36px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .section-number {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 12px; color: var(--text); }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── Process Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: var(--light-bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 16px;
+    }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-body strong { display: block; font-size: 0.93rem; color: var(--primary); margin-bottom: 2px; }
+    .step-body span { font-size: 0.88rem; color: var(--muted); }
+
+    /* ── Tags ── */
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tag {
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border: 1px solid #b6d8f7;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ── Pain Points ── */
+    .pain-list { list-style: none; margin-top: 8px; }
+    .pain-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.9rem;
+    }
+    .pain-list li:last-child { border-bottom: none; }
+    .pain-list li::before {
+      content: "⚠";
+      color: #e57c00;
+      font-size: 13px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Automation type cards ── */
+    .auto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+    @media (max-width: 580px) { .auto-grid { grid-template-columns: 1fr; } }
+    .auto-card {
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .auto-card.unattended { background: #e8f5ff; border: 1px solid #b6d8f7; }
+    .auto-card.attended   { background: #fff4e6; border: 1px solid #f7c98c; }
+    .auto-card h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .auto-card.unattended h4 { color: #0d5e9e; }
+    .auto-card.attended   h4 { color: #92400e; }
+    .auto-card ul { padding-left: 18px; font-size: 0.87rem; color: var(--muted); }
+    .auto-card ul li { margin-bottom: 4px; }
+
+    .justification-box {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-left: 4px solid var(--green);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #14532d;
+    }
+
+    /* ── Implementation ── */
+    .impl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    @media (max-width: 580px) { .impl-grid { grid-template-columns: 1fr; } }
+    .impl-card {
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .impl-card h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .impl-card ul { padding-left: 18px; font-size: 0.87rem; color: var(--muted); }
+    .impl-card ul li { margin-bottom: 4px; }
+
+    /* ── Benefits Table ── */
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead tr { background: var(--primary); color: #fff; }
+    thead th { padding: 12px 14px; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(even) { background: var(--light-bg); }
+    tbody tr:hover { background: #e8f3fc; }
+    tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+    .val-before { color: var(--red); font-weight: 600; }
+    .val-after  { color: var(--green); font-weight: 600; }
+
+    /* ── Summary highlight ── */
+    .summary-box {
+      background: linear-gradient(135deg, #e0f0ff, #f0fdf4);
+      border: 1px solid #93c5fd;
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-top: 20px;
+      font-size: 0.93rem;
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .summary-box strong { color: var(--accent); }
+
+    /* ── Chart ── */
+    .chart-container {
+      margin-top: 28px;
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+    }
+    .chart-container h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      color: var(--primary);
+      margin-top: 0;
+    }
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 620px) { .charts-row { grid-template-columns: 1fr; } }
+    .chart-wrap { position: relative; height: 280px; }
+    .chart-label {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">RPA Use Case Analysis</div>
+  <h1>Employee Onboarding Automation</h1>
+  <p class="subtitle">A structured evaluation of Robotic Process Automation opportunities within the HR onboarding lifecycle</p>
+</header>
+
+<main>
+
+  <!-- ── Section 1: Introduction ── -->
+  <div class="card">
+    <span class="section-number">Section 1</span>
+    <h2>Introduction</h2>
+    <p>
+      Employee onboarding is one of the most process-intensive functions within HR operations. Each new hire triggers a cascade of coordinated activities spanning multiple departments — HR, IT, Payroll, and Compliance — each requiring data entry into separate systems, document collection, account provisioning, and scheduling.
+    </p>
+    <p>
+      Despite its critical role in employee experience and regulatory compliance, onboarding remains heavily manual in most organisations. HR teams routinely re-enter the same employee data across disparate platforms, chase document submissions via email, and manually provision system access — all of which introduce delay, duplication, and error.
+    </p>
+    <p>
+      Robotic Process Automation (RPA) is well-suited to address these inefficiencies. Onboarding follows predictable, rule-based workflows with high transaction volume, structured data inputs, and clear decision points. These characteristics make it an ideal candidate for automation — reducing cycle times, eliminating manual errors, and freeing HR professionals to focus on higher-value, relationship-driven work.
+    </p>
+  </div>
+
+  <!-- ── Section 2: Business Process Description ── -->
+  <div class="card">
+    <span class="section-number">Section 2</span>
+    <h2>Business Process Description</h2>
+
+    <h3>Step-by-Step Onboarding Activities</h3>
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Job Offer &amp; Acceptance</strong>
+          <span>HR generates and sends the offer letter — either manually or via JD Edwards. The candidate reviews, signs, and confirms acceptance. HR logs the acceptance and triggers subsequent onboarding workflows.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Pre-Onboarding Setup</strong>
+          <span>HR collects the new hire's personal information (name, address, SIN/SSN, banking details). A company email address and initial credentials are assigned and communicated to the employee.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Document Management</strong>
+          <span>Required documents (ID verification, employment contracts, tax forms, compliance acknowledgements) are collected from the employee. HR uploads these to OneDrive/SharePoint and manually verifies completeness against a checklist.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>Payroll &amp; Benefits Setup</strong>
+          <span>Employee details are manually entered into Paycon. Standard benefits packages are configured, including health, dental, and pension enrolment forms — often replicated from data already entered in other systems.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <strong>IT &amp; Equipment Provisioning</strong>
+          <span>IT submits requests for a laptop, phone, and peripherals. Software access is provisioned across required applications based on role. Microsoft 365 licences, VPN access, and role-specific tools are assigned.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <strong>Orientation &amp; Training Scheduling</strong>
+          <span>HR schedules orientation sessions, books calendar invites, and distributes training links and documentation. LMS access is provisioned and training pathways are assigned based on role and department.</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <strong>First-Day Follow-Up</strong>
+          <span>HR confirms the employee has system access, reviews document completion status, and addresses any outstanding items. A final checklist review ensures compliance before payroll activates.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <h3>Systems Involved</h3>
+    <div class="tag-row">
+      <span class="tag">JD Edwards — HRIS / ERP</span>
+      <span class="tag">Paycon — Payroll</span>
+      <span class="tag">Microsoft 365 — Email &amp; IT</span>
+      <span class="tag">OneDrive / SharePoint — Document Storage</span>
+    </div>
+
+    <h3>Key Pain Points</h3>
+    <ul class="pain-list">
+      <li>Manual data re-entry across multiple disconnected systems leads to duplicate work and inconsistent records.</li>
+      <li>Time-consuming onboarding setup delays employee readiness and negatively impacts first-day experience.</li>
+      <li>Manual payroll entry introduces errors in compensation, tax configuration, and benefits enrolment.</li>
+      <li>Tracking document submissions and completeness via email is inefficient and prone to oversight.</li>
+      <li>JD Edwards, Paycon, and Microsoft 365 are not natively integrated, requiring manual data bridges between platforms.</li>
+    </ul>
+  </div>
+
+  <!-- ── Section 3: Use Case Evaluation ── -->
+  <div class="card">
+    <span class="section-number">Section 3</span>
+    <h2>Use Case Evaluation</h2>
+
+    <h3>Recommended Automation Type: Hybrid RPA</h3>
+    <p>
+      Given the mix of high-volume standard processes and edge cases requiring human judgement, a <strong>Hybrid RPA model</strong> is recommended — combining unattended automation for routine tasks with attended assistance for exception handling.
+    </p>
+
+    <div class="auto-grid">
+      <div class="auto-card unattended">
+        <h4>🤖 Unattended Automation</h4>
+        <ul>
+          <li>Upload new employee data to JD Edwards</li>
+          <li>Enter payroll details into Paycon</li>
+          <li>Create Microsoft 365 accounts and assign licences</li>
+          <li>Upload and organise documents to SharePoint</li>
+          <li>Generate standard payroll and benefits entries</li>
+          <li>Trigger IT provisioning requests automatically</li>
+        </ul>
+      </div>
+      <div class="auto-card attended">
+        <h4>👤 Attended Automation</h4>
+        <ul>
+          <li>HR reviews flagged exceptions (e.g. visa workers)</li>
+          <li>Approval of custom or non-standard benefits packages</li>
+          <li>Manual adjustment of data anomalies detected by bots</li>
+          <li>Handling edge-case document types or missing fields</li>
+          <li>Sign-off on compliance-sensitive configurations</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="justification-box">
+      ✅ <strong>Justification:</strong> The majority of hires follow standardised, rule-based workflows — making unattended automation highly effective and cost-efficient at scale. Attended steps preserve human oversight for exceptions, reducing risk while maintaining speed. Well-defined decision rules and structured data inputs further lower the complexity and risk of implementation.
+    </div>
+  </div>
+
+  <!-- ── Section 4: Implementation Plan ── -->
+  <div class="card">
+    <span class="section-number">Section 4</span>
+    <h2>Implementation Plan (High-Level)</h2>
+
+    <h3>Priority Automation Targets</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Employee Data Entry into JD Edwards</strong><span>Automate transfer of onboarding form data into JD Edwards HRIS — highest impact, highest volume.</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Microsoft 365 Account Creation</strong><span>Bot provisions email, assigns licence tier, and adds to appropriate security groups based on role template.</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Document Uploads to SharePoint</strong><span>Automate sorting, naming, and uploading of collected documents into the correct folder structure with completeness validation.</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Payroll Setup in Paycon</strong><span>Replicate validated employee data from JD Edwards into Paycon and configure standard benefits enrolment entries.</span></div>
+      </div>
+    </div>
+
+    <h3>Tools &amp; Platforms</h3>
+    <div class="impl-grid">
+      <div class="impl-card">
+        <h4>RPA Platforms</h4>
+        <ul>
+          <li>UiPath</li>
+          <li>Automation Anywhere</li>
+          <li>Blue Prism</li>
+          <li>Microsoft Power Automate</li>
+        </ul>
+      </div>
+      <div class="impl-card">
+        <h4>Integration Methods</h4>
+        <ul>
+          <li>JD Edwards REST API (preferred)</li>
+          <li>Screen scraping (fallback if API limited)</li>
+          <li>Microsoft Graph API (M365 provisioning)</li>
+          <li>SharePoint REST API / Power Automate connectors</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Potential Challenges</h3>
+    <ul class="pain-list">
+      <li>Handling exception cases — visa holders, contract staff, custom benefits — without breaking the automated flow.</li>
+      <li>JD Edwards API limitations may require brittle screen-scraping as a fallback, increasing maintenance burden.</li>
+      <li>Data security requirements for handling sensitive PII across automated workflows.</li>
+      <li>Inconsistent SharePoint/OneDrive permission structures may cause upload failures or access errors.</li>
+      <li>Change management — ensuring HR teams trust and adopt the hybrid workflow rather than reverting to manual steps.</li>
+    </ul>
+  </div>
+
+  <!-- ── Section 5: Projected Benefits ── -->
+  <div class="card">
+    <span class="section-number">Section 5</span>
+    <h2>Projected Benefits (Quantified)</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Before Automation</th>
+            <th>After Automation</th>
+            <th>Improvement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Time per hire (end-to-end)</td>
+            <td class="val-before">4–6 hours</td>
+            <td class="val-after">1–2 hours</td>
+            <td>~65–75% reduction</td>
+          </tr>
+          <tr>
+            <td>Payroll / HRIS data errors</td>
+            <td class="val-before">5–10%</td>
+            <td class="val-after">&lt;1%</td>
+            <td>~90% error reduction</td>
+          </tr>
+          <tr>
+            <td>Weekly HR hours (50 hires/week)</td>
+            <td class="val-before">250–300 hours</td>
+            <td class="val-after">50–75 hours</td>
+            <td>~75–80% time savings</td>
+          </tr>
+          <tr>
+            <td>Document completeness rate</td>
+            <td class="val-before">~70–80%</td>
+            <td class="val-after">&gt;95%</td>
+            <td>Significant compliance gain</td>
+          </tr>
+          <tr>
+            <td>Time-to-productivity for new hires</td>
+            <td class="val-before">3–5 days</td>
+            <td class="val-after">1–2 days</td>
+            <td>Faster ramp-up</td>
+          </tr>
+          <tr>
+            <td>Cost / resource savings</td>
+            <td class="val-before">High manual labour cost</td>
+            <td class="val-after">Reduced FTE overhead</td>
+            <td>Significant cost avoidance</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-box">
+      <strong>Summary:</strong> Hybrid RPA automation reduces manual HR onboarding effort by <strong>70–80%</strong>, brings payroll and HRIS error rates below <strong>1%</strong>, and accelerates new hire readiness from days to hours. The result is not just efficiency — it frees HR professionals from repetitive data entry to focus on candidate experience, strategic workforce planning, and exception management that genuinely requires human expertise.
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <h3>Visual Comparison: Before vs. After Automation</h3>
+      <div class="charts-row">
+
+        <div>
+          <div class="chart-wrap">
+            <canvas id="timeChart"></canvas>
+          </div>
+          <p class="chart-label">Hours per hire &amp; weekly HR hours (sample: 50 hires/week)</p>
+        </div>
+
+        <div>
+          <div class="chart-wrap">
+            <canvas id="errorChart"></canvas>
+          </div>
+          <p class="chart-label">Error rate reduction &amp; document completeness improvement</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  RPA Use Case Analysis — Employee Onboarding &nbsp;|&nbsp; For internal review and planning purposes
+</footer>
+
+<script>
+  const BLUE   = 'rgba(13, 126, 207, 0.85)';
+  const GREEN  = 'rgba(22, 163, 74, 0.85)';
+  const RED    = 'rgba(220, 38, 38, 0.82)';
+  const BORDER_BLUE  = '#0d7ecf';
+  const BORDER_GREEN = '#16a34a';
+  const BORDER_RED   = '#dc2626';
+
+  /* ── Chart 1: Time Savings ── */
+  new Chart(document.getElementById('timeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Hrs per Hire (avg)', 'Weekly HR Hours\n(÷10 for scale)'],
+      datasets: [
+        {
+          label: 'Before Automation',
+          data: [5, 27.5],
+          backgroundColor: RED,
+          borderColor: BORDER_RED,
+          borderWidth: 1.5,
+          borderRadius: 5,
+        },
+        {
+          label: 'After Automation',
+          data: [1.5, 6.25],
+          backgroundColor: GREEN,
+          borderColor: BORDER_GREEN,
+          borderWidth: 1.5,
+          borderRadius: 5,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if (ctx.dataIndex === 1) return ` ${(v * 10).toFixed(0)} hrs/week`;
+              return ` ${v} hrs/hire`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Hours (weekly ÷10)', font: { size: 11 } },
+          grid: { color: '#e5eaf2' },
+          ticks: { font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 } }
+        }
+      }
+    }
+  });
+
+  /* ── Chart 2: Quality Improvements ── */
+  new Chart(document.getElementById('errorChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Payroll/HRIS\nError Rate (%)', 'Document\nCompleteness (%)'],
+      datasets: [
+        {
+          label: 'Before Automation',
+          data: [7.5, 75],
+          backgroundColor: RED,
+          borderColor: BORDER_RED,
+          borderWidth: 1.5,
+          borderRadius: 5,
+        },
+        {
+          label: 'After Automation',
+          data: [0.8, 97],
+          backgroundColor: GREEN,
+          borderColor: BORDER_GREEN,
+          borderWidth: 1.5,
+          borderRadius: 5,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y}%`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 110,
+          title: { display: true, text: 'Percentage (%)', font: { size: 11 } },
+          grid: { color: '#e5eaf2' },
+          ticks: { font: { size: 11 }, callback: v => v + '%' }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 } }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
